@@ -6,6 +6,7 @@ import copy
 
 target = pp.prepare_dataset("../../data/5nix_compound/5nix_pocket_pc.ply")
 source = pp.prepare_dataset("../../data/5nix_compound/5nix_ligand_pc.ply")
+source_model = pp.prepare_dataset("../../data/5nix_compound/model_ligand.ply")
 
 
 voxel_size = 0.5
@@ -18,32 +19,38 @@ target.estimate_normal(voxel_size * 2)
 source.calculate_fpfh(voxel_size * 30)
 target.calculate_fpfh(voxel_size * 30)
 
-result = pp.execute_global_registration(source.pcd_down, 
-                                        target.pcd_down, 
-                                        source.pcd_fpfh, 
-                                        target.pcd_fpfh, 
-                                        voxel_size)
 
+for i in range(10):
+    # --- ＦＰＦＨ特徴量をマッチングさせる
+    result = pp.execute_global_registration(source.pcd_down, 
+                                            target.pcd_down, 
+                                            source.pcd_fpfh, 
+                                            target.pcd_fpfh, 
+                                            voxel_size)
 
-print(":: ", result)
+    # --- 結果表示
+    print(":: Iteration %d --- --- ---" % i)
+    print(":: ", result)
 
+    # --- 画像保存（色替え、向き変え）
+    target.pcd.paint_uniform_color([0, 0.651, 0.929])
+    source.pcd.paint_uniform_color([1, 0.706, 0])
+    source.pcd.transform(result.transformation)
 
-pp.draw_registration_result(source.pcd, target.pcd, result.transformation)
+    # --- 画像保存（ウィンドウ出さずに保存）
+    vis = o3d.visualization.Visualizer()
+    vis.create_window()
+    vis.add_geometry(source.pcd)
+    vis.add_geometry(target.pcd)
+    # - 結果画像の向きを変える試み
+    # ctr = vis.get_view_control()
+    # ctr.translate(90.0, 0.0)
+    # -
+    vis.update_geometry()
+    vis.poll_events()
+    vis.update_renderer()
+    vis.capture_screen_image("result/test_pic%d.jpg" % i)
+    vis.destroy_window()
 
-
-
-
-target_pcd = copy.deepcopy(target.pcd.paint_uniform_color([0, 0.651, 0.929]))
-source_pcd = copy.deepcopy(source.pcd.transform(result.transformation))
-source_pcd = source_pcd.paint_uniform_color([1, 0.706, 0])
-
-vis = o3d.visualization.Visualizer()
-vis.create_window()
-vis.add_geometry(source_pcd)
-vis.add_geometry(target_pcd)
-vis.update_geometry()
-vis.poll_events()
-vis.update_renderer()
-vis.capture_screen_image("result/test_pic.jpg")
-vis.destroy_window()
-
+    # --- 向きを元に戻す
+    source.pcd.transform(np.linalg.inv(result.transformation))
