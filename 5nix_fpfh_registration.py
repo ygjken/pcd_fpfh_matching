@@ -19,8 +19,10 @@ target.estimate_normal(voxel_size * 2)
 source.calculate_fpfh(voxel_size * 30)
 target.calculate_fpfh(voxel_size * 30)
 
+# --- 推定したリガンドのポーズと真のポーズとのＲＳＭＥをファイルに書き込み
+f = open('result_rmse.txt', mode="w")
 
-for i in range(10):
+for i in range(20):
     # --- ＦＰＦＨ特徴量をマッチングさせる
     result = pp.execute_global_registration(source.pcd_down, 
                                             target.pcd_down, 
@@ -36,6 +38,10 @@ for i in range(10):
     target.pcd.paint_uniform_color([0, 0.651, 0.929])
     source.pcd.paint_uniform_color([1, 0.706, 0])
     source.pcd.transform(result.transformation)
+
+    # --- 推定したリガンドのポーズと真のポーズとのＲＳＭＥ
+    rmse = np.average(source.pcd.compute_point_cloud_distance(source_model.pcd))
+    f.write(str(rmse)+"\n")
 
     # --- 画像保存（ウィンドウ出さずに保存）
     vis = o3d.visualization.Visualizer()
@@ -54,3 +60,5 @@ for i in range(10):
 
     # --- 向きを元に戻す
     source.pcd.transform(np.linalg.inv(result.transformation))
+
+f.close()
