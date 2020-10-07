@@ -18,18 +18,21 @@ target.downsampling(voxel_size)
 source.estimate_normal(voxel_size * 2)
 target.estimate_normal(voxel_size * 2)
 
+os.makedirs("result/rmse_data", exist_ok=True)
+
+
 for fpfh_radius_size in range(5, 51, 5):
 
     source.calculate_fpfh(fpfh_radius_size)
     target.calculate_fpfh(fpfh_radius_size)
 
     # --- 推定したリガンドのポーズと真のポーズとのＲＳＭＥをファイルに書き込み
-    f = open('result/result_rmse_radius%d.txt' % fpfh_radius_size, mode="w")
+    f = open('result/rmse_data/result_rmse_radius%d.txt' % fpfh_radius_size, mode="w")
 
     # --- 結果画像を格納するためのフォルダーを作成
     os.makedirs("result/fpfh_radius_%d" %fpfh_radius_size, exist_ok=True)
 
-    for i in range(20):
+    for i in range(30):
         # --- ＦＰＦＨ特徴量をマッチングさせる
         result = pp.execute_global_registration(source.pcd_down, 
                                                 target.pcd_down, 
@@ -39,7 +42,7 @@ for fpfh_radius_size in range(5, 51, 5):
 
         # --- 結果表示
         print(":: Iteration %d --- --- ---" % i)
-        print(":: ", result)
+        # print(":: ", result)
 
         # --- 画像保存（色替え、向き変え）
         target.pcd.paint_uniform_color([0, 0.651, 0.929])
