@@ -32,7 +32,9 @@ for fpfh_radius_size in range(5, 51, 5):
     # --- 結果画像を格納するためのフォルダーを作成
     os.makedirs("result/fpfh_radius_%d" %fpfh_radius_size, exist_ok=True)
 
-    for i in range(30):
+    # --- 進捗表示
+    print(":: Iteration  ")
+    for i in range(100):
         # --- ＦＰＦＨ特徴量をマッチングさせる
         result = pp.execute_global_registration(source.pcd_down, 
                                                 target.pcd_down, 
@@ -40,8 +42,11 @@ for fpfh_radius_size in range(5, 51, 5):
                                                 target.pcd_fpfh, 
                                                 voxel_size)
 
-        # --- 結果表示
-        print(":: Iteration %d --- --- ---" % i)
+        # --- 進捗表示
+        # print("-", end='')
+        if (i % 10) == 0:
+            print("%d" % i)
+
         # print(":: ", result)
 
         # --- 画像保存（色替え、向き変え）
@@ -52,22 +57,27 @@ for fpfh_radius_size in range(5, 51, 5):
         # --- 推定したリガンドのポーズと真のポーズとのＲＳＭＥ
         rmse = np.average(source.pcd.compute_point_cloud_distance(source_model.pcd))
         f.write(str(rmse)+"\n") 
-        # --- 画像保存（ウィンドウ出さずに保存）
-        vis = o3d.visualization.Visualizer()
-        vis.create_window()
-        vis.add_geometry(source.pcd)
-        vis.add_geometry(target.pcd)
-        # - 結果画像の向きを変える試み
-        # ctr = vis.get_view_control()
-        # ctr.translate(90.0, 0.0)
-        # -
-        vis.update_geometry()
-        vis.poll_events()
-        vis.update_renderer()
-        vis.capture_screen_image("result/fpfh_radius_%d" %fpfh_radius_size + "/test_pic%d.jpg" % i)
-        vis.destroy_window()
+
+        if rmse < 4.0:
+            # --- 画像保存（ウィンドウ出さずに保存）
+            vis = o3d.visualization.Visualizer()
+            vis.create_window()
+            vis.add_geometry(source.pcd)
+            vis.add_geometry(target.pcd)
+            # - 結果画像の向きを変える試み
+            # ctr = vis.get_view_control()
+            # ctr.translate(90.0, 0.0)
+            # -
+            vis.update_geometry()
+            vis.poll_events()
+            vis.update_renderer()
+            vis.capture_screen_image("result/fpfh_radius_%d" %fpfh_radius_size + "/test_pic%d.jpg" % i)
+            vis.destroy_window()
 
         # --- 向きを元に戻す
         source.pcd.transform(np.linalg.inv(result.transformation))
+
+    # --- 進捗表示
+    print()
 
 f.close()

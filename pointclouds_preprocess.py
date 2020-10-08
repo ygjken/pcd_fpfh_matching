@@ -46,9 +46,9 @@ class prepare_dataset:
 # FPFH and RANSACでRegistrationを行う
 def execute_global_registration(source_down, target_down, source_fpfh, target_fpfh, voxel_size):
     distance_threshold = voxel_size * 1.5
-    print(":: RANSAC registration on downsampled point clouds.")
-    print("   Since the downsampling voxel size is %.3f," % voxel_size)
-    print("   we use a liberal distance threshold %.3f." % distance_threshold)
+    # print(":: RANSAC registration on downsampled point clouds.")
+    # print("   Since the downsampling voxel size is %.3f," % voxel_size)
+    # print("   we use a liberal distance threshold %.3f." % distance_threshold)
     result = o3d.registration.registration_ransac_based_on_feature_matching(
         source_down, 
         target_down, 
