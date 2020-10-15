@@ -18,13 +18,19 @@ def draw_registration_result(source, target, transformation = np.identity(4)):
 def save_img(source, target, file_path, file_name, transformation = np.identity(4)):
     vis = o3d.visualization.Visualizer()
     vis.create_window()
-    vis.add_geometry(source)
+    vis.add_geometry(source.transform(transformation))
     vis.add_geometry(target)
     vis.update_geometry()
     vis.poll_events()
     vis.update_renderer()
     vis.capture_screen_image(file_path + "/" + file_name + ".jpg")
     vis.destroy_window()
+
+
+
+def change_pcd_color(source, target):
+    source.paint_uniform_color([1, 0.706, 0])
+    target.paint_uniform_color([0, 0.651, 0.929])
 
 
 
